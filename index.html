@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraud Detection System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #8892b0;
+            font-size: 1.1rem;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0,217,255,0.2);
+        }
+
+        .stat-card h3 {
+            color: #8892b0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00d9ff;
+        }
+
+        .stat-card.success .value { color: #00ff88; }
+        .stat-card.warning .value { color: #ffaa00; }
+        .stat-card.danger .value { color: #ff4757; }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card.full-width {
+            grid-column: span 2;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2 .icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #8892b0;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input[readonly] {
+            cursor: not-allowed;
+            color: #c7c9d3;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #00d9ff;
+            box-shadow: 0 0 20px rgba(0,217,255,0.2);
+        }
+
+        .form-group select option {
+            background: #1a1a2e;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            border: none;
+            border-radius: 10px;
+            color: #1a1a2e;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,217,255,0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result-box.success {
+            background: rgba(0,255,136,0.1);
+            border: 1px solid #00ff88;
+        }
+
+        .result-box.error {
+            background: rgba(255,71,87,0.1);
+            border: 1px solid #ff4757;
+        }
+
+        .result-box h4 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .result-box.success h4 { color: #00ff88; }
+        .result-box.error h4 { color: #ff4757; }
+
+        .form-result {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        .form-result.success {
+            background: rgba(0,255,136,0.1);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+        }
+
+        .form-result.error {
+            background: rgba(255,71,87,0.1);
+            border: 1px solid #ff4757;
+            color: #ff6b81;
+        }
+
+        .section-note {
+            color: #8892b0;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .citizens-grid {
+            display: grid;
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .citizen-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .citizen-card:hover {
+            border-color: #00d9ff;
+            background: rgba(0,217,255,0.1);
+        }
+
+        .citizen-info h4 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .citizen-info p {
+            color: #8892b0;
+            font-size: 0.85rem;
+        }
+
+        .citizen-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .citizen-status.active {
+            background: rgba(0,255,136,0.2);
+            color: #00ff88;
+        }
+
+        .citizen-status.inactive {
+            background: rgba(255,71,87,0.2);
+            color: #ff4757;
+        }
+
+        .citizen-status.aadhaar {
+            background: rgba(0,217,255,0.15);
+            color: #00d9ff;
+            margin-left: 10px;
+        }
+
+        .gate-status {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .gate {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .gate .icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .gate .label {
+            font-size: 0.75rem;
+            color: #8892b0;
+        }
+
+        .gate.passed .icon { color: #00ff88; }
+        .gate.failed .icon { color: #ff4757; }
+        .gate.pending .icon { color: #8892b0; }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #00d9ff;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Fraud Detection System</h1>
+            <p>Blockchain-based Verification for Jan Dhan Yojana Transactions</p>
+        </header>
+
+        <div class="dashboard">
+            <div class="stat-card success">
+                <h3>Available Budget</h3>
+                <div class="value" id="budget">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <h3>System Status</h3>
+                <div class="value" id="system-status">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <h3>Ledger Integrity</h3>
+                <div class="value" id="ledger-integrity">Loading...</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2><span class="icon">+</span> Process Transaction</h2>
+                
+                <form id="transaction-form">
+                    <div class="form-group">
+                        <label>Citizen ID (Aadhaar)</label>
+                        <input type="text" id="citizen_id" placeholder="Enter 12-digit Citizen ID" maxlength="12" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Scheme</label>
+                        <select id="scheme" required>
+                            <option value="">Select Scheme</option>
+                            <option value="Health_Scheme">Health Scheme</option>
+                            <option value="Education_Scheme">Education Scheme</option>
+                            <option value="Agriculture_Scheme">Agriculture Scheme</option>
+                            <option value="Housing_Scheme">Housing Scheme</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Amount (Rs.)</label>
+                        <input type="number" id="amount" placeholder="Enter amount" min="1" required>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="submit-btn">
+                        Process Transaction
+                    </button>
+                </form>
+
+                <div class="gate-status" id="gates">
+                    <div class="gate pending" id="gate-eligibility">
+                        <div class="icon">&#9679;</div>
+                        <div class="label">Eligibility</div>
+                    </div>
+                    <div class="gate pending" id="gate-budget">
+                        <div class="icon">&#9679;</div>
+                        <div class="label">Budget</div>
+                    </div>
+                    <div class="gate pending" id="gate-frequency">
+                        <div class="icon">&#9679;</div>
+                        <div class="label">Frequency</div>
+                    </div>
+                </div>
+
+                <div class="result-box" id="result-box">
+                    <h4 id="result-title"></h4>
+                    <p id="result-message"></p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">+</span> Registered Citizens</h2>
+                <p class="section-note">Transaction ledger is restricted to administrators. Only citizen directory is visible here.</p>
+                <div class="citizens-grid" id="citizens-grid"></div>
+            </div>
+
+            <div class="card full-width">
+                <h2><span class="icon">+</span> Register Citizen</h2>
+                <form id="add-citizen-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Citizen ID</label>
+                            <input type="text" id="new_citizen_id" maxlength="12" placeholder="12-digit ID" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" id="new_name" placeholder="Full Name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Account Status</label>
+                            <select id="new_account_status">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Aadhaar Linked</label>
+                            <select id="new_aadhaar_linked">
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Scheme Eligibility</label>
+                            <select id="new_scheme" required>
+                                <option value="">Select Scheme</option>
+                                <option value="Health_Scheme">Health Scheme</option>
+                                <option value="Education_Scheme">Education Scheme</option>
+                                <option value="Agriculture_Scheme">Agriculture Scheme</option>
+                                <option value="Housing_Scheme">Housing Scheme</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Scheme Amount (Rs.)</label>
+                            <input type="number" id="new_scheme_amount" min="1" placeholder="Amount" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Claim Count</label>
+                            <input type="number" id="new_claim_count" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Claim Date</label>
+                            <input type="date" id="new_last_claim_date" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <button type="submit" class="btn" id="citizen-submit-btn">Save Citizen</button>
+                        </div>
+                    </div>
+                </form>
+                <div class="form-result" id="citizen-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="application/json" id="scheme-amount-map">{{ scheme_amount_map | tojson | safe }}</script>
+
+    <script>
+        const defaultSchemeAmountMap = {
+            "Health_Scheme": 5000,
+            "Education_Scheme": 10000,
+            "Agriculture_Scheme": 15000,
+            "Housing_Scheme": 20000
+        };
+
+        let SCHEME_AMOUNT_MAP = defaultSchemeAmountMap;
+        const schemeMapNode = document.getElementById('scheme-amount-map');
+        if (schemeMapNode) {
+            const rawPayload = (schemeMapNode.textContent || '').trim();
+            const placeholderPrefix = '{' + '{';
+            if (rawPayload && !rawPayload.startsWith(placeholderPrefix)) {
+                try {
+                    const parsed = JSON.parse(rawPayload);
+                    if (parsed && typeof parsed === 'object') {
+                        SCHEME_AMOUNT_MAP = parsed;
+                    }
+                } catch (err) {
+                    console.warn('Unable to parse injected scheme map, using defaults.', err);
+                }
+            }
+        }
+
+        function getMappedAmount(scheme) {
+            if (!SCHEME_AMOUNT_MAP) {
+                return '';
+            }
+            const value = SCHEME_AMOUNT_MAP[scheme];
+            return typeof value === 'number' ? value : '';
+        }
+
+        function updateTransactionAmount(scheme, fallback) {
+            const amountField = document.getElementById('amount');
+            if (!amountField) return;
+            const mappedValue = getMappedAmount(scheme);
+            amountField.value = mappedValue !== '' ? mappedValue : (fallback ?? '');
+        }
+
+        function updateRegistrationAmount(scheme) {
+            const field = document.getElementById('new_scheme_amount');
+            if (!field) return;
+            const mappedValue = getMappedAmount(scheme);
+            field.value = mappedValue !== '' ? mappedValue : '';
+        }
+
+        const transactionAmountField = document.getElementById('amount');
+        if (transactionAmountField) {
+            transactionAmountField.readOnly = true;
+        }
+
+        const registrationAmountField = document.getElementById('new_scheme_amount');
+        if (registrationAmountField) {
+            registrationAmountField.readOnly = true;
+        }
+
+        const schemeSelect = document.getElementById('scheme');
+        if (schemeSelect) {
+            schemeSelect.addEventListener('change', () => updateTransactionAmount(schemeSelect.value));
+        }
+
+        const newSchemeSelect = document.getElementById('new_scheme');
+        if (newSchemeSelect) {
+            newSchemeSelect.addEventListener('change', () => updateRegistrationAmount(newSchemeSelect.value));
+        }
+
+        updateTransactionAmount(schemeSelect ? schemeSelect.value : '');
+        updateRegistrationAmount(newSchemeSelect ? newSchemeSelect.value : '');
+
+        // Load status
+        async function loadStatus() {
+            try {
+                const res = await fetch('/status');
+                const data = await res.json();
+                document.getElementById('budget').textContent = 'Rs. ' + data.budget.toLocaleString();
+                document.getElementById('system-status').textContent = data.system_status;
+                document.getElementById('ledger-integrity').textContent = data.ledger_integrity ? 'VALID' : 'TAMPERED';
+                
+                const integrityCard = document.getElementById('ledger-integrity').parentElement;
+                integrityCard.classList.remove('success', 'danger');
+                integrityCard.classList.add(data.ledger_integrity ? 'success' : 'danger');
+            } catch (e) {
+                console.error('Error loading status:', e);
+            }
+        }
+
+        // Load citizens
+        async function loadCitizens() {
+            try {
+                const res = await fetch('/citizens');
+                const data = await res.json();
+                const grid = document.getElementById('citizens-grid');
+                
+                grid.innerHTML = data.map(c => {
+                    const amountDisplay = Number(c.Scheme_Amount).toLocaleString();
+                    return `
+                    <div class="citizen-card" onclick="fillCitizen('${c.Citizen_ID}', '${c.Scheme_Eligibility}', ${c.Scheme_Amount})">
+                        <div class="citizen-info">
+                            <h4>${c.Name}</h4>
+                            <p>ID: ${c.Citizen_ID} | ${c.Scheme_Eligibility} | Rs. ${amountDisplay}</p>
+                        </div>
+                        <div>
+                            <span class="citizen-status ${c.Account_Status === 'Active' ? 'active' : 'inactive'}">
+                                ${c.Account_Status}
+                            </span>
+                            <span class="citizen-status aadhaar">${c.Aadhaar_Linked ? 'Aadhaar Linked' : 'Aadhaar Pending'}</span>
+                        </div>
+                    </div>
+                `; }).join('');
+            } catch (e) {
+                console.error('Error loading citizens:', e);
+            }
+        }
+
+        function fillCitizen(id, scheme, amount) {
+            document.getElementById('citizen_id').value = id;
+            document.getElementById('scheme').value = scheme;
+            updateTransactionAmount(scheme, amount);
+        }
+
+        function resetGates() {
+            ['eligibility', 'budget', 'frequency'].forEach(g => {
+                const el = document.getElementById('gate-' + g);
+                el.classList.remove('passed', 'failed');
+                el.classList.add('pending');
+                el.querySelector('.icon').innerHTML = '&#9679;';
+            });
+        }
+
+        function updateGate(gate, passed) {
+            const el = document.getElementById('gate-' + gate);
+            el.classList.remove('pending');
+            el.classList.add(passed ? 'passed' : 'failed');
+            el.querySelector('.icon').innerHTML = passed ? '&#10003;' : '&#10007;';
+        }
+
+        // Form submission
+        document.getElementById('transaction-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Processing...';
+            
+            resetGates();
+            
+            const citizen_id = document.getElementById('citizen_id').value;
+            const scheme = document.getElementById('scheme').value;
+            const amount = document.getElementById('amount').value;
+
+            try {
+                const res = await fetch('/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ citizen_id, scheme, amount })
+                });
+                
+                const data = await res.json();
+                const resultBox = document.getElementById('result-box');
+                const resultTitle = document.getElementById('result-title');
+                const resultMessage = document.getElementById('result-message');
+                
+                resultBox.style.display = 'block';
+                
+                if (data.success) {
+                    resultBox.classList.remove('error');
+                    resultBox.classList.add('success');
+                    resultTitle.textContent = 'Transaction Approved';
+                    resultMessage.textContent = `${data.citizen_name} - Remaining Budget: Rs. ${data.remaining_budget.toLocaleString()}`;
+                    
+                    updateGate('eligibility', true);
+                    updateGate('budget', true);
+                    updateGate('frequency', true);
+                    
+                    loadStatus();
+                } else {
+                    resultBox.classList.remove('success');
+                    resultBox.classList.add('error');
+                    resultTitle.textContent = 'Transaction Rejected';
+                    resultMessage.textContent = data.message;
+                    
+                    // Update gates based on failure point
+                    if (data.gate === 'lookup' || data.gate === 'system' || data.gate === 'integrity') {
+                        // Failed before gates
+                    } else if (data.gate === 'eligibility') {
+                        updateGate('eligibility', false);
+                    } else if (data.gate === 'frequency') {
+                        updateGate('eligibility', true);
+                        updateGate('budget', true);
+                        updateGate('frequency', false);
+                    } else if (data.gate === 'budget') {
+                        updateGate('eligibility', true);
+                        updateGate('budget', false);
+                    }
+                }
+            } catch (e) {
+                console.error('Error:', e);
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Process Transaction';
+        });
+
+        // Citizen form handling
+        const citizenForm = document.getElementById('add-citizen-form');
+        const citizenResult = document.getElementById('citizen-result');
+        const citizenSubmitBtn = document.getElementById('citizen-submit-btn');
+
+        function setCitizenMessage(type, text) {
+            citizenResult.textContent = text;
+            citizenResult.className = 'form-result ' + type;
+            citizenResult.style.display = 'block';
+        }
+
+        function resetCitizenMessage() {
+            citizenResult.textContent = '';
+            citizenResult.style.display = 'none';
+        }
+
+        function setDefaultCitizenDate() {
+            const field = document.getElementById('new_last_claim_date');
+            if (field) {
+                field.value = new Date().toISOString().split('T')[0];
+            }
+        }
+
+        setDefaultCitizenDate();
+        updateRegistrationAmount(newSchemeSelect ? newSchemeSelect.value : '');
+
+        if (citizenForm) {
+            citizenForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                resetCitizenMessage();
+                citizenSubmitBtn.disabled = true;
+                citizenSubmitBtn.innerHTML = '<span class="loading"></span> Saving...';
+
+                const payload = {
+                    citizen_id: document.getElementById('new_citizen_id').value.trim(),
+                    name: document.getElementById('new_name').value.trim(),
+                    account_status: document.getElementById('new_account_status').value,
+                    aadhaar_linked: document.getElementById('new_aadhaar_linked').value === 'true',
+                    scheme_eligibility: document.getElementById('new_scheme').value,
+                    scheme_amount: Number(document.getElementById('new_scheme_amount').value),
+                    claim_count: Number(document.getElementById('new_claim_count').value || 0),
+                    last_claim_date: document.getElementById('new_last_claim_date').value
+                };
+
+                try {
+                    const res = await fetch('/citizens', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.message || 'Unable to save citizen');
+                    }
+                    setCitizenMessage('success', data.message || 'Citizen saved successfully');
+                    citizenForm.reset();
+                    setDefaultCitizenDate();
+                    loadCitizens();
+                } catch (error) {
+                    console.error('Error saving citizen:', error);
+                    setCitizenMessage('error', error.message || 'Unable to save citizen');
+                }
+
+                citizenSubmitBtn.disabled = false;
+                citizenSubmitBtn.textContent = 'Save Citizen';
+            });
+        }
+
+        // Initial load
+        loadStatus();
+        loadCitizens();
+    </script>
+</body>
+</html>
